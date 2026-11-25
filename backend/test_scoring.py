@@ -3,13 +3,15 @@ import os
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 
 import unittest
-from main import Base, engine, SessionLocal, User, Matchup, Pick, calculate_user_week, cumulative_points_through
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
+from main import Base, User, Matchup, Pick, calculate_user_week, cumulative_points_through
 
 class ScoringTest(unittest.TestCase):
     def setUp(self):
-        Base.metadata.drop_all(bind=engine)
-        Base.metadata.create_all(bind=engine)
-        self.db = SessionLocal()
+        self.engine = create_engine('sqlite:///:memory:')
+        Base.metadata.create_all(bind=self.engine)
+        self.db = Session(self.engine)
         self.user = User(name="Test", pin_hash="unused")
         self.db.add(self.user)
         self.db.flush()
@@ -18,6 +20,7 @@ class ScoringTest(unittest.TestCase):
         self.db.flush()
     def tearDown(self):
         self.db.close()
+        self.engine.dispose()
     def test_missing_is_neutral(self):
         for i, choice in enumerate(["A", "A", "A", "B", "B"]):
             self.db.add(Pick(user_id=self.user.id, matchup_id=self.games[i].id, choice=choice))
