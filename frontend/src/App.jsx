@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Brand, TeamLabel, LeagueArchive, Standings } from "./League.jsx";
 
 const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
@@ -66,7 +67,7 @@ function Auth({ onAuth }) {
   return (
     <main className="auth-shell">
       <section className="auth-card">
-        <h1>League Pick'em</h1>
+        <Brand login />
         <p className="muted">
           Elige el ganador de cada matchup. Tus picks quedan registrados con fecha y hora.
         </p>
@@ -323,7 +324,7 @@ function AdminView({ onBack, initialWeek = 1 }) {
                   className={`result-choice ${m.winner_choice === "A" ? "winner-selected" : ""}`}
                   onClick={() => setWinner(m.id, "A")}
                 >
-                  {m.team_a}
+                  <TeamLabel team={m.team_a} />
                 </button>
 
                 <span>vs</span>
@@ -332,7 +333,7 @@ function AdminView({ onBack, initialWeek = 1 }) {
                   className={`result-choice ${m.winner_choice === "B" ? "winner-selected" : ""}`}
                   onClick={() => setWinner(m.id, "B")}
                 >
-                  {m.team_b}
+                  <TeamLabel team={m.team_b} />
                 </button>
               </div>
             ))}
@@ -412,6 +413,7 @@ function Picks({ user, onLogout }) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [adminMode, setAdminMode] = useState(false);
+  const [tab, setTab] = useState("picks");
 
   async function loadWeek() {
     setError("");
@@ -493,7 +495,7 @@ function Picks({ user, onLogout }) {
     <main className="page">
       <div className="topbar">
         <div>
-          <h1>League Pick'em</h1>
+          <Brand />
           <p className="muted">
             Hola, <strong>{user?.name || localStorage.getItem("pickem_name")}</strong>
           </p>
@@ -505,6 +507,15 @@ function Picks({ user, onLogout }) {
         </div>
       </div>
 
+      <nav className="league-nav" aria-label="Secciones de la liga">
+        {[["picks","Pick'em"],["ranking","Ranking"],["rivalries","Rivalidades"],["history","Historial"],["fame","Hall of Fame"]].map(([key,label]) => (
+          <button key={key} className={tab === key ? "active" : ""} aria-pressed={tab === key} onClick={() => setTab(key)}>{label}</button>
+        ))}
+      </nav>
+      {tab === "ranking" && <><Standings api={api} /><Scoreboard data={scoreboard} /></>}
+      {(tab === "rivalries" || tab === "history") && <LeagueArchive api={api} mode={tab} />}
+      {tab === "fame" && <section className="panel archive-panel"><span className="eyebrow">EST. 2017</span><h2>Hall of Fame</h2><p className="muted">Los campeones, subcampeones y récords históricos estarán disponibles cuando importemos las temporadas de Yahoo Fantasy.</p></section>}
+      {tab === "picks" && <>
       <section className="panel summary">
         <div>
           <span className="eyebrow">WEEK {week}</span>
@@ -565,7 +576,7 @@ function Picks({ user, onLogout }) {
                 disabled={m.locked}
                 onClick={() => choose(m.id, "A")}
               >
-                {m.team_a}
+                <TeamLabel team={m.team_a} />
               </button>
 
               <span className="vs">VS</span>
@@ -575,7 +586,7 @@ function Picks({ user, onLogout }) {
                 disabled={m.locked}
                 onClick={() => choose(m.id, "B")}
               >
-                {m.team_b}
+                <TeamLabel team={m.team_b} />
               </button>
             </div>
 
@@ -592,6 +603,8 @@ function Picks({ user, onLogout }) {
       </section>
 
       <Scoreboard data={scoreboard} />
+      </>}
+      <footer className="league-footer">JABA FANTASY · EST. 2017 · EVERY GAME COUNTS</footer>
     </main>
   );
 }
