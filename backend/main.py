@@ -27,8 +27,8 @@ CORS_ORIGINS = [
 
 POINTS_CORRECT = 10
 POINTS_INCORRECT = -5
-# Para evitar que convenga dejar un partido sin pronóstico, una ausencia cuenta como error.
-POINTS_MISSING = -5
+# Solo se puntúan los pronósticos realizados; una ausencia vale cero.
+POINTS_MISSING = 0
 
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 engine = create_engine(DATABASE_URL, pool_pre_ping=True, connect_args=connect_args)

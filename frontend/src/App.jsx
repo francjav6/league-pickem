@@ -73,7 +73,7 @@ function Auth({ onAuth }) {
         </p>
 
         <div className="rules-mini">
-          <strong>Reglas:</strong> acierto +10 · error -5 · sin pick -5
+          <strong>Reglas:</strong> acierto +10 · error -5 · sin pick 0
         </div>
 
         <form onSubmit={submit}>
@@ -151,7 +151,7 @@ function Scoreboard({ data }) {
           <span className="eyebrow">PUNTAJE WEEK {data.week}</span>
           <h2>Resultado de la fecha</h2>
         </div>
-        <div className="rules-badge">Acierto +10 · Error -5</div>
+        <div className="rules-badge">Acierto +10 · Error -5 · Sin pick {data.points_missing ?? "—"}</div>
       </div>
 
       <div className="table-wrap compact-table">
@@ -524,7 +524,7 @@ function Picks({ user, onLogout }) {
             {locked ? "🔒 Picks cerrados" : "⏳ Cierra"}:{" "}
             <strong>{formatDate(lockAt)}</strong>
           </p>
-          <p className="rules-line">Acierto +10 · Error -5 · Sin pick -5</p>
+          <p className="rules-line">Acierto +10 · Error -5 · Sin pick 0</p>
         </div>
 
         <div className="week-navigation">
