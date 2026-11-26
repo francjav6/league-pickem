@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Brand, TeamLabel, LeagueArchive, Standings } from "./League.jsx";
+import { Brand, TeamLabel, Standings } from "./League.jsx";
+import YahooImport from "./YahooImport.jsx";
 
 const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
@@ -301,6 +302,7 @@ function AdminView({ onBack, initialWeek = 1 }) {
         {message && <div className="success">{message}</div>}
       </section>
 
+      {results && <YahooImport key={week + ":" + adminKey} api={api} week={week} adminKey={adminKey} onApplied={load} />}
       {results && (
         <section className="panel admin-results-panel">
           <div className="scoreboard-title">
@@ -508,13 +510,12 @@ function Picks({ user, onLogout }) {
       </div>
 
       <nav className="league-nav" aria-label="Secciones de la liga">
-        {[["picks","Pick'em"],["ranking","Ranking"],["rivalries","Rivalidades"],["history","Historial"],["fame","Hall of Fame"]].map(([key,label]) => (
-          <button key={key} className={tab === key ? "active" : ""} aria-pressed={tab === key} onClick={() => setTab(key)}>{label}</button>
+        <button onClick={() => {sessionStorage.setItem("jaba_vault_api", API); window.location.assign("/vault.html");}}>JABA Vault</button>
+        {[["picks","Pick'em"],["ranking","Ranking Pick'em"],["rivalries","Rivalidades"],["history","Historial"],["fame","Hall of Fame"]].map(([key,label]) => (
+          <button key={key} className={tab === key ? "active" : ""} aria-pressed={tab === key} onClick={() => {const vaultPages = {rivalries:"rivalidades", history:"temporadas", fame:"hall"}; if (vaultPages[key]) {sessionStorage.setItem("jaba_vault_api",API);window.location.assign("/vault.html#" + vaultPages[key]);} else setTab(key);}}>{label}</button>
         ))}
       </nav>
       {tab === "ranking" && <><Standings api={api} /><Scoreboard data={scoreboard} /></>}
-      {(tab === "rivalries" || tab === "history") && <LeagueArchive api={api} mode={tab} />}
-      {tab === "fame" && <section className="panel archive-panel"><span className="eyebrow">EST. 2017</span><h2>Hall of Fame</h2><p className="muted">Los campeones, subcampeones y récords históricos estarán disponibles cuando importemos las temporadas de Yahoo Fantasy.</p></section>}
       {tab === "picks" && <>
       <section className="panel summary">
         <div>

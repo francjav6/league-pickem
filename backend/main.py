@@ -126,6 +126,8 @@ def normalize_dt(dt):
 
 
 def matchup_locked(m: Matchup) -> bool:
+    if m.winner_choice in {"A", "B"}:
+        return True
     if m.manually_locked:
         return True
     if m.starts_at is None:
@@ -375,7 +377,7 @@ def save_pick(
     if choice not in {"A", "B"}:
         raise HTTPException(400, "choice debe ser A o B")
 
-    matchup = db.query(Matchup).filter(Matchup.id == matchup_id).first()
+    matchup = db.query(Matchup).filter(Matchup.id == matchup_id).with_for_update().first()
     if not matchup:
         raise HTTPException(404, "Matchup no encontrado")
 
@@ -736,9 +738,11 @@ def admin_result(
     if winner not in {None, "A", "B"}:
         raise HTTPException(400, "winner_choice debe ser A, B o null")
 
-    m = db.query(Matchup).filter(Matchup.id == matchup_id).first()
+    m = db.query(Matchup).filter(Matchup.id == matchup_id).with_for_update().first()
     if not m:
         raise HTTPException(404, "Matchup no encontrado")
+    if yahoo_week_exists(db, m.week) and winner != m.winner_choice:
+        raise HTTPException(409, "Fecha importada de Yahoo; no se puede modificar un ganador aisladamente.")
 
     m.winner_choice = winner
     db.commit()
@@ -748,3 +752,12 @@ def admin_result(
         "matchup_id": matchup_id,
         "winner_choice": m.winner_choice,
     }
+
+
+# JABA: additive historical imports, no destructive migrations.
+from yahoo_import import install as install_yahoo_import
+yahoo_week_exists = install_yahoo_import(
+    app, Base, engine, get_db, require_admin, get_current_user,
+    Matchup, User, Pick, matchup_locked, cumulative_points_through,
+    (POINTS_CORRECT, POINTS_INCORRECT, POINTS_MISSING),
+)

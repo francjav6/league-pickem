@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 
 export const TEAMS = [
-  ["VENEZUELAN DEMOCRACY","Francisco"],
-  ["La Mike Alstott","Tomas G / Javier (por confirmar)"],
+  ["VENEZUELAN DEMOCRACY","Pacho"],
+  ["La Mike Alstott","Javi"],
   ["0 al TE","Raul"],
   ["Glory Warpigs (Col)","Juan Esteban"],
   ["Delfincitos","Tomas Zajdman"],
   ["Green Badgers","Walter"],
   ["Felipe's First-Rate Team","Felipe"],
-  ["Hasbu Nation","Federico"],
-  ["FENICIOS S.A","Juan Calvete"],
+  ["Hasbu Nation","Fredi"],
+  ["FENICIOS S.A","Mono"],
   ["UAI Urquizers","Jorge"],
   ["Ex Ol's Syndicate","Kevin"],
   ["J19","Illai"],
