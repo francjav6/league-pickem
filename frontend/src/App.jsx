@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { Brand, TeamLabel, Standings } from "./League.jsx";
+import YahooImport from "./YahooImport.jsx";
 
 const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
@@ -66,13 +68,13 @@ function Auth({ onAuth }) {
   return (
     <main className="auth-shell">
       <section className="auth-card">
-        <h1>League Pick'em</h1>
+        <Brand login />
         <p className="muted">
           Elige el ganador de cada matchup. Tus picks quedan registrados con fecha y hora.
         </p>
 
         <div className="rules-mini">
-          <strong>Reglas:</strong> acierto +10 · error -5 · sin pick -5
+          <strong>Reglas:</strong> acierto +10 · error -5 · sin pick 0
         </div>
 
         <form onSubmit={submit}>
@@ -150,7 +152,7 @@ function Scoreboard({ data }) {
           <span className="eyebrow">PUNTAJE WEEK {data.week}</span>
           <h2>Resultado de la fecha</h2>
         </div>
-        <div className="rules-badge">Acierto +10 · Error -5</div>
+        <div className="rules-badge">Acierto +10 · Error -5 · Sin pick {data.points_missing ?? "—"}</div>
       </div>
 
       <div className="table-wrap compact-table">
@@ -300,6 +302,7 @@ function AdminView({ onBack, initialWeek = 1 }) {
         {message && <div className="success">{message}</div>}
       </section>
 
+      {results && <YahooImport key={week + ":" + adminKey} api={api} week={week} adminKey={adminKey} onApplied={load} />}
       {results && (
         <section className="panel admin-results-panel">
           <div className="scoreboard-title">
@@ -323,7 +326,7 @@ function AdminView({ onBack, initialWeek = 1 }) {
                   className={`result-choice ${m.winner_choice === "A" ? "winner-selected" : ""}`}
                   onClick={() => setWinner(m.id, "A")}
                 >
-                  {m.team_a}
+                  <TeamLabel team={m.team_a} />
                 </button>
 
                 <span>vs</span>
@@ -332,7 +335,7 @@ function AdminView({ onBack, initialWeek = 1 }) {
                   className={`result-choice ${m.winner_choice === "B" ? "winner-selected" : ""}`}
                   onClick={() => setWinner(m.id, "B")}
                 >
-                  {m.team_b}
+                  <TeamLabel team={m.team_b} />
                 </button>
               </div>
             ))}
@@ -412,6 +415,7 @@ function Picks({ user, onLogout }) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [adminMode, setAdminMode] = useState(false);
+  const [tab, setTab] = useState("picks");
 
   async function loadWeek() {
     setError("");
@@ -493,7 +497,7 @@ function Picks({ user, onLogout }) {
     <main className="page">
       <div className="topbar">
         <div>
-          <h1>League Pick'em</h1>
+          <Brand />
           <p className="muted">
             Hola, <strong>{user?.name || localStorage.getItem("pickem_name")}</strong>
           </p>
@@ -505,6 +509,14 @@ function Picks({ user, onLogout }) {
         </div>
       </div>
 
+      <nav className="league-nav" aria-label="Secciones de la liga">
+        <button onClick={() => {sessionStorage.setItem("jaba_vault_api", API); window.location.assign("/vault.html");}}>JABA Vault</button>
+        {[["picks","Pick'em"],["ranking","Ranking Pick'em"],["rivalries","Rivalidades"],["history","Historial"],["fame","Hall of Fame"]].map(([key,label]) => (
+          <button key={key} className={tab === key ? "active" : ""} aria-pressed={tab === key} onClick={() => {const vaultPages = {rivalries:"rivalidades", history:"temporadas", fame:"hall"}; if (vaultPages[key]) {sessionStorage.setItem("jaba_vault_api",API);window.location.assign("/vault.html#" + vaultPages[key]);} else setTab(key);}}>{label}</button>
+        ))}
+      </nav>
+      {tab === "ranking" && <><Standings api={api} /><Scoreboard data={scoreboard} /></>}
+      {tab === "picks" && <>
       <section className="panel summary">
         <div>
           <span className="eyebrow">WEEK {week}</span>
@@ -513,7 +525,7 @@ function Picks({ user, onLogout }) {
             {locked ? "🔒 Picks cerrados" : "⏳ Cierra"}:{" "}
             <strong>{formatDate(lockAt)}</strong>
           </p>
-          <p className="rules-line">Acierto +10 · Error -5 · Sin pick -5</p>
+          <p className="rules-line">Acierto +10 · Error -5 · Sin pick 0</p>
         </div>
 
         <div className="week-navigation">
@@ -565,7 +577,7 @@ function Picks({ user, onLogout }) {
                 disabled={m.locked}
                 onClick={() => choose(m.id, "A")}
               >
-                {m.team_a}
+                <TeamLabel team={m.team_a} />
               </button>
 
               <span className="vs">VS</span>
@@ -575,7 +587,7 @@ function Picks({ user, onLogout }) {
                 disabled={m.locked}
                 onClick={() => choose(m.id, "B")}
               >
-                {m.team_b}
+                <TeamLabel team={m.team_b} />
               </button>
             </div>
 
@@ -592,6 +604,8 @@ function Picks({ user, onLogout }) {
       </section>
 
       <Scoreboard data={scoreboard} />
+      </>}
+      <footer className="league-footer">JABA FANTASY · EST. 2017 · EVERY GAME COUNTS</footer>
     </main>
   );
 }
