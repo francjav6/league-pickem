@@ -56,7 +56,13 @@ def install(app, Base, engine, get_db, require_admin, get_current_user):
 
     AnalyticsSnapshot.__table__.create(bind=engine,checkfirst=True)
 
-    @app.get("/history/analytics")
+    @app.get("/admin/history/analytics/access",dependencies=[Depends(require_admin)])
+    def analytics_access(user=Depends(get_current_user)):
+        return Response('{"admin":true}',media_type="application/json",headers={"Cache-Control":"no-store"})
+
+    # Protect the old URL too, including snapshots already imported.
+    @app.get("/history/analytics",dependencies=[Depends(require_admin)])
+    @app.get("/admin/history/analytics",dependencies=[Depends(require_admin)])
     def get_analytics(user=Depends(get_current_user),db=Depends(get_db)):
         row=db.get(AnalyticsSnapshot,1)
         if not row:
