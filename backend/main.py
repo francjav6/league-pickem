@@ -761,3 +761,8 @@ yahoo_week_exists = install_yahoo_import(
     Matchup, User, Pick, matchup_locked, cumulative_points_through,
     (POINTS_CORRECT, POINTS_INCORRECT, POINTS_MISSING),
 )
+
+
+# Read-only analytics for authenticated Vault members; admin-only snapshot publication.
+from vault_analytics import install as install_vault_analytics
+install_vault_analytics(app, Base, engine, get_db, require_admin, get_current_user)
